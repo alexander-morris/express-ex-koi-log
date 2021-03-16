@@ -1,11 +1,26 @@
 // index.js
 const Express = require('express');
-const { joinKoi } = require('koi-logs');
+const koiLogs = require('koi-logs').default;
 
 var app = new Express ();
 
-// add koi tasks
-joinKoi(app, '/home/al/');
+var koiLogger = new koiLogs ("/home/al/");
+
+connectKoi()
+async function connectKoi ( ) {
+
+  var koiLoggerMiddleware = await koiLogger.generateMiddleware()
+  console.log('created koi middleware', koiLoggerMiddleware)
+  app.use(koiLoggerMiddleware);
+  app.get("/logs/", async function(req, res) {
+    return await koiLogger.koiLogsHelper(req, res)
+  });
+  app.get("/logs/raw/", async function(req, res) { 
+    return await koiLogger.koiRawLogsHelper(req, res)
+  });
+  koiLogger.koiLogsDailyTask()
+  
+}
 
 // start the server listener
 app.listen(process.env.PORT || 3000, () => {
